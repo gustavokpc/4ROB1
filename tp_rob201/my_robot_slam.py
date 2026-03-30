@@ -42,6 +42,8 @@ class MyRobotSlam(RobotAbstract):
 
         self.tiny_slam = TinySlam(self.occupancy_grid)
         self.planner = Planner(self.occupancy_grid)
+        self.get_goal_by_click = lambda: (0, 0, 0)  # dummy function to be set by click on map
+        self.set_goal_by_click = lambda: None  # dummy function to be set by click on map
 
         # storage for pose after localization
         self.corrected_pose = np.array([0, 0, 0])
@@ -50,7 +52,7 @@ class MyRobotSlam(RobotAbstract):
         """
         Main control function executed at each time step
         """
-        return self.control_tp1()
+        return self.control_tp2()
 
     def control_tp1(self):
         """
@@ -69,9 +71,25 @@ class MyRobotSlam(RobotAbstract):
         Main control function with full SLAM, random exploration and path planning
         """
         pose = self.odometer_values()
-        goal = [0,0,0]
+
+        # goal = [-200,-400,0]
+ 
+        # Set goal by clicking on the map, only for display for the moment
+        if self.counter == 0:
+            self.set_goal_by_click()
+            goal = self.get_goal_by_click()
+            print("\nGoal set by click: ", goal)
+            self.counter += 1
+
+        goal = self.get_goal_by_click()
+
+        
 
         # Compute new command speed to perform obstacle avoidance
         command = potential_field_control(self.lidar(), pose, goal)
+
+        print("\nPose: ", pose)
+        print("\nForward command: ", command["forward"], "Rotation command: ", command["rotation"])
+        print("\nGoal: ", goal)
 
         return command
