@@ -42,8 +42,6 @@ class MyRobotSlam(RobotAbstract):
 
         self.tiny_slam = TinySlam(self.occupancy_grid)
         self.planner = Planner(self.occupancy_grid)
-        self.get_goal_by_click = lambda: (0, 0, 0)  # dummy function to be set by click on map
-        self.set_goal_by_click = lambda: None  # dummy function to be set by click on map
 
         # storage for pose after localization
         self.corrected_pose = np.array([0, 0, 0])
@@ -72,19 +70,12 @@ class MyRobotSlam(RobotAbstract):
         """
         pose = self.odometer_values()
 
-        # goal = [-200,-400,0]
- 
-        # Set goal by clicking on the map, only for display for the moment
-        if self.counter == 0:
-            self.set_goal_by_click()
-            goal = self.get_goal_by_click()
-            print("\nGoal set by click: ", goal)
-            self.counter += 1
-
-        goal = self.get_goal_by_click()
+        goal = [-200,-450,0]
 
         
 
+        self.tiny_slam.update_map(self.lidar(), pose)
+        self.occupancy_grid.display_cv(pose, goal=goal)
         # Compute new command speed to perform obstacle avoidance
         command = potential_field_control(self.lidar(), pose, goal)
 
@@ -93,3 +84,48 @@ class MyRobotSlam(RobotAbstract):
         print("\nGoal: ", goal)
 
         return command
+
+    # def control_tp3(self):
+    #         """
+    #         Control function for TP3
+    #         Map update and display with SLAM, path planning and path following
+    #         """
+
+    #     pose = self.odometer_values()
+    #     goal = [-200,-400,0]
+    #     self.tiny_slam.update_map(self.lidar(), pose)
+
+    #     # Compute new command speed to perform obstacle avoidance
+    #     command = potential_field_control(self.lidar(), pose, goal)
+
+    #     print("\nPose: ", pose)
+    #     print("\nForward command: ", command["forward"], "Rotation command: ", command["rotation"])
+    #     print("\nGoal: ", goal)
+
+    #     return command
+
+    def control_tp4(self):
+        """
+        Control function for TP2
+        Main control function with full SLAM, random exploration and path planning
+        """
+        pose = self.odometer_values()
+
+        goal = [-200,-450,0]
+
+        
+        self.tiny_slam.localise(self.lidar(), pose)
+
+        pose = self.odometer_values()
+        
+        self.tiny_slam.update_map(self.lidar(), pose)
+        
+        # Compute new command speed to perform obstacle avoidance
+        command = reactive_obst_avoid(self.lidar())
+
+        print("\nPose: ", pose)
+        print("\nForward command: ", command["forward"], "Rotation command: ", command["rotation"])
+        print("\nGoal: ", goal)
+
+        return command
+        

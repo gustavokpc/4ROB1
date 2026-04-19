@@ -14,15 +14,26 @@ def reactive_obst_avoid(lidar):
     laser_dist = lidar.get_sensor_values()
     laser_angle = lidar.get_ray_angles()
 
-    if min(laser_dist) < 20:
-        if laser_angle[np.argmin(laser_dist)] > 0:
-            rotation_speed = -0.3
-        else:
-            rotation_speed = 0.3
-        speed = 0.5
+    safe_distance = 100
+
+    # Find which angle give the maximum distance
+    idx_max_dist = np.argmax(laser_dist)
+    best_angle = laser_angle[idx_max_dist]
+    max_val_found = laser_dist[idx_max_dist]
+
+    # Verify distance in front of the robot
+    front_mask = np.abs(laser_angle) < np.radians(5)
+    dist_front = np.min(laser_dist[front_mask])
+
+    if dist_front < safe_distance:
+        # Using sign (+ for left, - for right) to turn in the direction with more space
+        rotation_speed = 0.7 * np.sign(best_angle)
+        speed = 0.1
+        if np.abs(best_angle) < 0.01 and max_val_found < free_dist_threshold:
+            rotation_speed = 0.5
     else:
         rotation_speed = 0.0
-        speed = 0.5
+        speed = 0.7
 
     command = {"forward": speed,
                "rotation": rotation_speed}
@@ -95,10 +106,10 @@ def potential_field_control(lidar, current_pose, goal_pose):
         rotation_speed = -1
 
     # forward speed need to be between -1 and 1
-    if forward_speed > 0.5:
-        forward_speed = 0.5
-    elif forward_speed < -0.5:
-        forward_speed = -0.5
+    if forward_speed > 0.3:
+        forward_speed = 0.3
+    elif forward_speed < -0.3:
+        forward_speed = -0.3
 
     print("\nDistance to goal: ", distance_to_goal)
    
