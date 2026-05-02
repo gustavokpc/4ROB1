@@ -68,33 +68,10 @@ class Planner:
         start: Tuple[int, int] = self.grid.conv_world_to_map(start[0], start[1])
         goal: Tuple[int, int] = self.grid.conv_world_to_map(goal[0], goal[1])
 
-        # Check bounds
-        if not (0 <= start[0] < self.grid.x_max_map and 0 <= start[1] < self.grid.y_max_map):
-            print(f'Start out of bounds: {start}')
-            return None
-        if not (0 <= goal[0] < self.grid.x_max_map and 0 <= goal[1] < self.grid.y_max_map):
-            print(f'Goal out of bounds: {goal}')
-            return None
-
         # creates a copy of occupancy map to modify it and take into account
         # a margin in the walls
         self.map_walls = copy.deepcopy(self.grid.occupancy_map)
-        occupied = self.map_walls > 5  # occupied if log odds are high enough
-
-        # Dilate the occupied cells to increase wall margin for planning.
-        # Adjust kernel_size to enlarge/reduce margin.
-        kernel_size = 11
-        kernel = np.ones((kernel_size, kernel_size), np.uint8)
-        dilated = cv2.dilate(occupied.astype(np.uint8), kernel, iterations=1)
-        self.map_walls = dilated.astype(bool)
-
-        # Check if start and goal are free after dilation
-        if self.map_walls[start]:
-            print(f'Start is occupied')
-            return None
-        if self.map_walls[goal]:
-            print(f'Goal is occupied')
-            return None
+        # TODO for TP5: dilate walls in self.map_walls to take into account a margin around obstacles
 
         # cv2.imshow("map_walls", sel.map_walls)
 
@@ -133,7 +110,7 @@ class Planner:
                     heapq.heappush(open_set, (f_score[cell], cell))
 
         # goal was never reached
-        print('Open set is empty but goal was never reached')
+        print('failed getting to objective')
         return None
 
     def explore_frontiers(self):

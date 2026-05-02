@@ -40,11 +40,11 @@ class TinySlam:
                                 np.logical_and(y_laser_map >= 0, y_laser_map < self.grid.y_max_map))
         x_laser_map = x_laser_map[select]
         y_laser_map = y_laser_map[select]
-        print("Filtered laser points in map coordinates:", len(x_laser_map))
+        # print("Filtered laser points in map coordinates:", len(x_laser_map))
 
         # Add value to the map for the laser end points
         score = np.sum(self.grid.occupancy_map[x_laser_map, y_laser_map])
-        return score
+        return score    
 
     def get_corrected_pose(self, odom_pose, odom_pose_ref=None):
         """
@@ -73,8 +73,8 @@ class TinySlam:
         absolute_pose = self.get_corrected_pose(raw_odom_pose)
         best_score = self._score(lidar, absolute_pose)
         best_ref = self.odom_pose_ref.copy()
-        sigma = np.array([0.2, 0.2, np.radians(10)])
-        N = 50
+        sigma = np.array([1, 1, np.radians(10)])
+        N = 100
         trials_without_improvement = 0
 
         while trials_without_improvement < N:
@@ -92,6 +92,7 @@ class TinySlam:
             else:
                 trials_without_improvement += 1  # Increment counter if no improvement
         self.odom_pose_ref = best_ref
+        # print("\nBest score: ", best_score)
         return best_score
 
     def update_map(self, lidar, pose):
@@ -115,6 +116,35 @@ class TinySlam:
         points_x = pose[0] + ranges * np.cos(pose[2] + ray_angles)
         points_y = pose[1] + ranges * np.sin(pose[2] + ray_angles)
 
+        # points_x_minus1 = pose[0] + (ranges - 1) * np.cos(pose[2] + ray_angles)
+        # points_y_minus1 = pose[1] + (ranges - 1) * np.sin(pose[2] + ray_angles)
+
+        # points_x_minus2 = pose[0] + (ranges - 2) * np.cos(pose[2] + ray_angles)
+        # points_y_minus2 = pose[1] + (ranges - 2) * np.sin(pose[2] + ray_angles)
+
+        # points_x_minus3 = pose[0] + (ranges - 3) * np.cos(pose[2] + ray_angles)
+        # points_y_minus3 = pose[1] + (ranges - 3) * np.sin(pose[2] + ray_angles)        
+
+        # points_x_minus4 = pose[0] + (ranges - 4) * np.cos(pose[2] + ray_angles)
+        # points_y_minus4 = pose[1] + (ranges - 4) * np.sin(pose[2] + ray_angles)
+
+        # points_x_minus5 = pose[0] + (ranges - 5) * np.cos(pose[2] + ray_angles)
+        # points_y_minus5 = pose[1] + (ranges - 5) * np.sin(pose[2] + ray_angles)
+
+        # points_x_minus6 = pose[0] + (ranges - 6) * np.cos(pose[2] + ray_angles)
+        # points_y_minus6 = pose[1] + (ranges - 6) * np.sin(pose[2] + ray_angles)
+
+        # # Add points to lines between robot and lidar points
+        # for x, y in zip(points_x_minus6, points_y_minus6):
+        #     self.grid.add_value_along_line(pose[0], pose[1], x, y, val=-1)
+        
+        # self.grid.add_map_points(points_x_minus5, points_y_minus5, val=-1)
+        # self.grid.add_map_points(points_x_minus4, points_y_minus4, val=-1)
+        # self.grid.add_map_points(points_x_minus3, points_y_minus3, val=0)
+        # self.grid.add_map_points(points_x_minus2, points_y_minus2, val=2)
+        # self.grid.add_map_points(points_x_minus1, points_y_minus1, val=3)
+        # self.grid.add_map_points(points_x, points_y, val=4)
+
         points_x_minus1 = pose[0] + (ranges - 1) * np.cos(pose[2] + ray_angles)
         points_y_minus1 = pose[1] + (ranges - 1) * np.sin(pose[2] + ray_angles)
 
@@ -128,9 +158,10 @@ class TinySlam:
         for x, y in zip(points_x_minus3, points_y_minus3):
             self.grid.add_value_along_line(pose[0], pose[1], x, y, val=-1)
         
-        self.grid.add_map_points(points_x_minus2, points_y_minus2, val=0)
-        self.grid.add_map_points(points_x_minus1, points_y_minus1, val=0.5)
-        self.grid.add_map_points(points_x, points_y, val=2)
+        self.grid.add_map_points(points_x_minus2, points_y_minus2, val=3)
+        self.grid.add_map_points(points_x_minus1, points_y_minus1, val=4)
+        self.grid.add_map_points(points_x, points_y, val=5)
+
         np.clip(self.grid.occupancy_map, -40, 40, out=self.grid.occupancy_map)
         # Add points to the map
         # TODO for TP3

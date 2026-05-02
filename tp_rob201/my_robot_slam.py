@@ -10,7 +10,7 @@ from place_bot.simulation.ray_sensors.lidar import LidarParams
 
 from tiny_slam import TinySlam
 
-from control import potential_field_control, reactive_obst_avoid
+from control import potential_field_control, reactive_obst_avoid, follow_path
 from occupancy_grid import OccupancyGrid
 from planner import Planner
 
@@ -45,12 +45,18 @@ class MyRobotSlam(RobotAbstract):
 
         # storage for pose after localization
         self.corrected_pose = np.array([0, 0, 0])
+        
+        # Path planning variables
+        self.exploration_iterations = 1000  # Number of iterations for exploration
+        self.path = None
+        self.path_index = 0
+        self.phase = 'explore'  # Phase: 'explore', 'planning', or 'follow'
 
     def control(self):
         """
         Main control function executed at each time step
         """
-        return self.control_tp2()
+        return self.control_tp4()
 
     def control_tp1(self):
         """
@@ -106,26 +112,56 @@ class MyRobotSlam(RobotAbstract):
 
     def control_tp4(self):
         """
-        Control function for TP2
-        Main control function with full SLAM, random exploration and path planning
+        Control function for TP4
+        Main control function with full SLAM, exploration, path planning and path following
         """
         pose = self.odometer_values()
-
-        goal = [-200,-450,0]
-
         
         self.tiny_slam.localise(self.lidar(), pose)
-
-        pose = self.odometer_values()
+        self.corrected_pose = self.tiny_slam.get_corrected_pose(pose)
+        self.tiny_slam.update_map(self.lidar(), self.corrected_pose)
         
-        self.tiny_slam.update_map(self.lidar(), pose)
+        # Phase 1: EXPLORATION
+        if self.phase == 'explore':
+            self.occupancy_grid.display_cv(self.corrected_pose)
+            command = reactive_obst_avoid(self.lidar())
+            self.counter += 1
+            
+            if self.counter >= self.exploration_iterations:
+                print(f"\n=== Switching to planning phase after {self.counter} iterations ===")
+                self.phase = 'planning'
         
-        # Compute new command speed to perform obstacle avoidance
-        command = reactive_obst_avoid(self.lidar())
-
-        print("\nPose: ", pose)
-        print("\nForward command: ", command["forward"], "Rotation command: ", command["rotation"])
-        print("\nGoal: ", goal)
-
+        # Phase 2: PLANNING
+        elif self.phase == 'planning':
+            print(f"Current pose: {self.corrected_pose}")
+            origin = np.array([0, 0, 0])
+            self.path = self.planner.plan(self.corrected_pose, origin)
+            
+            if self.path is not None:
+                print(f"Path found with {len(self.path[0])} waypoints")
+                self.phase = 'follow'
+                self.path_index = 0
+                self.occupancy_grid.display_cv(self.corrected_pose, goal=origin, traj=self.path)
+                command = reactive_obst_avoid(self.lidar())
+            else:
+                print("Failed to find path, returning to exploration")
+                self.phase = 'explore'
+                self.counter = 0
+                command = reactive_obst_avoid(self.lidar())
+        
+        # Phase 3: FOLLOW PATH
+        elif self.phase == 'follow':
+            origin = np.array([0, 0, 0])
+            command, self.path_index = follow_path(self.lidar(), self.corrected_pose, self.path, self.path_index)
+            self.occupancy_grid.display_cv(self.corrected_pose, goal=origin, traj=self.path)
+            
+            # Check if reached the origin
+            dist_to_origin = np.linalg.norm(self.corrected_pose[:2] - origin[:2])
+            if dist_to_origin < 20:
+                print(f"\n=== Reached origin! Distance: {dist_to_origin:.2f} ===")
+                command = {"forward": 0.0, "rotation": 0.0}
+                self.phase = 'explore'
+                self.counter = 0
+    
         return command
         
