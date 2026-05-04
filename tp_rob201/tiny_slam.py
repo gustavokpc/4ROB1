@@ -113,8 +113,79 @@ class TinySlam:
         ranges = ranges[valid]
         ray_angles = ray_angles[valid]
 
+        # -12
+        points_x_minus12 = pose[0] + (ranges - 12) * np.cos(pose[2] + ray_angles)
+        points_y_minus12 = pose[1] + (ranges - 12) * np.sin(pose[2] + ray_angles)
+
+        for x, y in zip(points_x_minus12, points_y_minus12):
+            self.grid.add_value_along_line(pose[0], pose[1], x, y, val=-1)
+
+        valid = ranges < (lidar.max_range - 10)
+        ranges = ranges[valid]
+        ray_angles = ray_angles[valid]
+
         points_x = pose[0] + ranges * np.cos(pose[2] + ray_angles)
         points_y = pose[1] + ranges * np.sin(pose[2] + ray_angles)
+
+        # -1 
+        points_x_minus1 = pose[0] + (ranges - 1) * np.cos(pose[2] + ray_angles)
+        points_y_minus1 = pose[1] + (ranges - 1) * np.sin(pose[2] + ray_angles)
+
+        # -2
+        points_x_minus2 = pose[0] + (ranges - 2) * np.cos(pose[2] + ray_angles)
+        points_y_minus2 = pose[1] + (ranges - 2) * np.sin(pose[2] + ray_angles)
+
+        # -3
+        points_x_minus3 = pose[0] + (ranges - 3) * np.cos(pose[2] + ray_angles)
+        points_y_minus3 = pose[1] + (ranges - 3) * np.sin(pose[2] + ray_angles)        
+
+        # -4
+        points_x_minus4 = pose[0] + (ranges - 4) * np.cos(pose[2] + ray_angles)
+        points_y_minus4 = pose[1] + (ranges - 4) * np.sin(pose[2] + ray_angles)
+
+        # -5
+        points_x_minus5 = pose[0] + (ranges - 5) * np.cos(pose[2] + ray_angles)
+        points_y_minus5 = pose[1] + (ranges - 5) * np.sin(pose[2] + ray_angles)
+
+        # -6
+        points_x_minus6 = pose[0] + (ranges - 6) * np.cos(pose[2] + ray_angles)
+        points_y_minus6 = pose[1] + (ranges - 6) * np.sin(pose[2] + ray_angles)
+        
+        # -7
+        points_x_minus7 = pose[0] + (ranges - 7) * np.cos(pose[2] + ray_angles)
+        points_y_minus7 = pose[1] + (ranges - 7) * np.sin(pose[2] + ray_angles)
+
+        # -8
+        points_x_minus8 = pose[0] + (ranges - 8) * np.cos(pose[2] + ray_angles)
+        points_y_minus8 = pose[1] + (ranges - 8) * np.sin(pose[2] + ray_angles)
+
+        # -9
+        points_x_minus9 = pose[0] + (ranges - 9) * np.cos(pose[2] + ray_angles)
+        points_y_minus9 = pose[1] + (ranges - 9) * np.sin(pose[2] + ray_angles)
+
+        # -10
+        points_x_minus10 = pose[0] + (ranges - 10) * np.cos(pose[2] + ray_angles)
+        points_y_minus10 = pose[1] + (ranges - 10) * np.sin(pose[2] + ray_angles)
+
+        # -11
+        points_x_minus11 = pose[0] + (ranges - 11) * np.cos(pose[2] + ray_angles)
+        points_y_minus11 = pose[1] + (ranges - 11) * np.sin(pose[2] + ray_angles)
+        
+        self.grid.add_map_points(points_x_minus11, points_y_minus11, val=-1)
+        self.grid.add_map_points(points_x_minus10, points_y_minus10, val=-1)
+        self.grid.add_map_points(points_x_minus9, points_y_minus9, val=0)
+        self.grid.add_map_points(points_x_minus8, points_y_minus8, val=0)
+        self.grid.add_map_points(points_x_minus7, points_y_minus7, val=0.5)
+        self.grid.add_map_points(points_x_minus6, points_y_minus6, val=0.5)
+        self.grid.add_map_points(points_x_minus5, points_y_minus5, val=3)
+        self.grid.add_map_points(points_x_minus4, points_y_minus4, val=3)
+        self.grid.add_map_points(points_x_minus3, points_y_minus3, val=4)
+        self.grid.add_map_points(points_x_minus2, points_y_minus2, val=4)
+        self.grid.add_map_points(points_x_minus1, points_y_minus1, val=6)
+        self.grid.add_map_points(points_x, points_y, val=6)
+
+        
+
 
         # points_x_minus1 = pose[0] + (ranges - 1) * np.cos(pose[2] + ray_angles)
         # points_y_minus1 = pose[1] + (ranges - 1) * np.sin(pose[2] + ray_angles)
@@ -123,44 +194,15 @@ class TinySlam:
         # points_y_minus2 = pose[1] + (ranges - 2) * np.sin(pose[2] + ray_angles)
 
         # points_x_minus3 = pose[0] + (ranges - 3) * np.cos(pose[2] + ray_angles)
-        # points_y_minus3 = pose[1] + (ranges - 3) * np.sin(pose[2] + ray_angles)        
-
-        # points_x_minus4 = pose[0] + (ranges - 4) * np.cos(pose[2] + ray_angles)
-        # points_y_minus4 = pose[1] + (ranges - 4) * np.sin(pose[2] + ray_angles)
-
-        # points_x_minus5 = pose[0] + (ranges - 5) * np.cos(pose[2] + ray_angles)
-        # points_y_minus5 = pose[1] + (ranges - 5) * np.sin(pose[2] + ray_angles)
-
-        # points_x_minus6 = pose[0] + (ranges - 6) * np.cos(pose[2] + ray_angles)
-        # points_y_minus6 = pose[1] + (ranges - 6) * np.sin(pose[2] + ray_angles)
+        # points_y_minus3 = pose[1] + (ranges - 3) * np.sin(pose[2] + ray_angles)
 
         # # Add points to lines between robot and lidar points
-        # for x, y in zip(points_x_minus6, points_y_minus6):
+        # for x, y in zip(points_x_minus3, points_y_minus3):
         #     self.grid.add_value_along_line(pose[0], pose[1], x, y, val=-1)
         
-        # self.grid.add_map_points(points_x_minus5, points_y_minus5, val=-1)
-        # self.grid.add_map_points(points_x_minus4, points_y_minus4, val=-1)
-        # self.grid.add_map_points(points_x_minus3, points_y_minus3, val=0)
-        # self.grid.add_map_points(points_x_minus2, points_y_minus2, val=2)
-        # self.grid.add_map_points(points_x_minus1, points_y_minus1, val=3)
-        # self.grid.add_map_points(points_x, points_y, val=4)
-
-        points_x_minus1 = pose[0] + (ranges - 1) * np.cos(pose[2] + ray_angles)
-        points_y_minus1 = pose[1] + (ranges - 1) * np.sin(pose[2] + ray_angles)
-
-        points_x_minus2 = pose[0] + (ranges - 2) * np.cos(pose[2] + ray_angles)
-        points_y_minus2 = pose[1] + (ranges - 2) * np.sin(pose[2] + ray_angles)
-
-        points_x_minus3 = pose[0] + (ranges - 3) * np.cos(pose[2] + ray_angles)
-        points_y_minus3 = pose[1] + (ranges - 3) * np.sin(pose[2] + ray_angles)
-
-        # Add points to lines between robot and lidar points
-        for x, y in zip(points_x_minus3, points_y_minus3):
-            self.grid.add_value_along_line(pose[0], pose[1], x, y, val=-1)
-        
-        self.grid.add_map_points(points_x_minus2, points_y_minus2, val=3)
-        self.grid.add_map_points(points_x_minus1, points_y_minus1, val=4)
-        self.grid.add_map_points(points_x, points_y, val=5)
+        # self.grid.add_map_points(points_x_minus2, points_y_minus2, val=3)
+        # self.grid.add_map_points(points_x_minus1, points_y_minus1, val=4)
+        # self.grid.add_map_points(points_x, points_y, val=5)
 
         np.clip(self.grid.occupancy_map, -40, 40, out=self.grid.occupancy_map)
         # Add points to the map

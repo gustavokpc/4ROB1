@@ -31,31 +31,31 @@ def reactive_obst_avoid(lidar):
     closest_angle = laser_angle[idx_min_dist]
 
     # INICIALIZAÇÃO DE COMANDOS
-    speed = 0.5
+    speed = 0.4
     rotation_speed = 0.0
-    safe_dist = 15  # Distância de segurança para paredes laterais
+    safe_dist = 5  # Distância de segurança para paredes laterais
 
     # LÓGICA DE DECISÃO
     if min_dist_found < safe_dist:
         # PRIORIDADE 1: Se algo estiver MUITO perto (zona de segurança), 
         # gire para o lado oposto ao obstáculo mais próximo.
-        speed = 0.2
+        speed = 0.1
         # Se o obstáculo está na direita (ângulo negativo), gira para esquerda (positivo)
         # Se está na esquerda (ângulo positivo), gira para direita (negativo)
-        rotation_speed = -0.8 * np.sign(closest_angle)
+        rotation_speed = -0.4 * np.sign(closest_angle)
         
     elif dist_front < free_dist_threshold:
         # PRIORIDADE 2: Se a frente não está livre, busca o melhor ângulo
-        speed = 0.2
-        rotation_speed = 0.3 * np.sign(best_angle)
+        speed = 0.1
+        rotation_speed = 0.2 * np.sign(best_angle)
         
         # Caso de beco sem saída (melhor ângulo é frente, mas frente < threshold)
         if np.abs(best_angle) < 0.05 and max_val_found < free_dist_threshold:
-            rotation_speed = 0.3
+            rotation_speed = 0.2
     
     else:
         # Caminho livre à frente e longe de paredes
-        speed = 0.5
+        speed = 0.4
         rotation_speed = 0.0
 
     return {"forward": speed, "rotation": rotation_speed}
@@ -120,10 +120,10 @@ def potential_field_control(lidar, current_pose, goal_pose):
         forward_speed = K_v * np.linalg.norm(gradient_total) * (omega_max / abs(omega_r))
 
     # rotation speed need to be between -1 and 1
-    if rotation_speed > 1:
-        rotation_speed = 1
-    elif rotation_speed < -1:
-        rotation_speed = -1
+    if rotation_speed > 0.6:
+        rotation_speed = 0.6
+    elif rotation_speed < -0.6:
+        rotation_speed = -0.6
 
     # forward speed need to be between -1 and 1
     if forward_speed > 0.3:
