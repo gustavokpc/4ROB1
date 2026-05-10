@@ -27,23 +27,13 @@ class Planner:
         """
         neighbor_list = []
         # TODO for TP5: iterate through neighbors and add free ones to neighbor_list
-        for i in range(-1, 2):
-            for j in range(-1, 2):
-                if i == 0 and j == 0:
-                    continue
-                neighbor_cell = (current_cell[0] + i, current_cell[1] + j)
-                if (0 <= neighbor_cell[0] < self.grid.x_max_map and
-                        0 <= neighbor_cell[1] < self.grid.y_max_map and
-                        self.map_walls[neighbor_cell] == 0):
-                    neighbor_list.append(neighbor_cell)
+
         return neighbor_list
 
     def heuristic(self, cell_1: Tuple[int, int], cell_2: Tuple[int, int]):
         """ Return heuristic goal distance """
         h = 0
             # TODO for TP5: compute heuristic distance between cell_1 and cell_2
-
-        h = math.sqrt((cell_1[0] - cell_2[0]) ** 2 + (cell_1[1] - cell_2[1]) ** 2)
         return h
 
     def reconstruct_path(self, came_from, goal):

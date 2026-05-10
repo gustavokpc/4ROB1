@@ -6,55 +6,55 @@ import numpy as np
 
 def reactive_obst_avoid(lidar):
     """
-    Desvio de obstáculos com margem de segurança lateral.
-    safe_dist: distância mínima desejada de qualquer parede.
+    Obstacle avoidance with lateral safety margin.
+    safe_dist: minimum desired distance from any wall.
     """
     laser_dist = lidar.get_sensor_values()
     laser_angle = lidar.get_ray_angles()
     
-    # 1. Definimos o que é uma direção livre
+    # Define what is a free direction
     free_dist_threshold = 100 
     
-    # 2. Encontrar o melhor caminho (maior distância)
+    # Find the best path (maximum distance)
     idx_max_dist = np.argmax(laser_dist)
     best_angle = laser_angle[idx_max_dist]
     max_val_found = laser_dist[idx_max_dist]
 
-    # 3. Verificar a distância à frente (zona de colisão direta)
-    front_mask = np.abs(laser_angle) < np.radians(10) # Aumentei um pouco para 10º
+    # Check the distance ahead (direct collision zone)
+    front_mask = np.abs(laser_angle) < np.radians(10) # Increased a bit to 10 degrees
     dist_front = np.min(laser_dist[front_mask])
 
-    # 4. LÓGICA DE DISTÂNCIA DE SEGURANÇA (Parede lateral)
-    # Encontramos o ponto mais próximo de qualquer lugar ao redor do robô
+    # SAFETY DISTANCE LOGIC (Lateral wall)
+    # Find the closest point from anywhere around the robot
     idx_min_dist = np.argmin(laser_dist)
     min_dist_found = laser_dist[idx_min_dist]
     closest_angle = laser_angle[idx_min_dist]
 
-    # INICIALIZAÇÃO DE COMANDOS
+    # COMMAND INITIALIZATION
     speed = 0.4
     rotation_speed = 0.0
-    safe_dist = 5  # Distância de segurança para paredes laterais
+    safe_dist = 20  # Safety distance for lateral walls
 
-    # LÓGICA DE DECISÃO
+    # DECISION LOGIC
     if min_dist_found < safe_dist:
-        # PRIORIDADE 1: Se algo estiver MUITO perto (zona de segurança), 
-        # gire para o lado oposto ao obstáculo mais próximo.
+        # PRIORITY 1: If something is VERY close (safety zone), 
+        # turn to the opposite side of the closest obstacle.
         speed = 0.1
-        # Se o obstáculo está na direita (ângulo negativo), gira para esquerda (positivo)
-        # Se está na esquerda (ângulo positivo), gira para direita (negativo)
+        # If the obstacle is on the right (negative angle), turn left (positive)
+        # If on the left (positive angle), turn right (negative)
         rotation_speed = -0.4 * np.sign(closest_angle)
         
     elif dist_front < free_dist_threshold:
-        # PRIORIDADE 2: Se a frente não está livre, busca o melhor ângulo
+        # PRIORITY 2: If the front is not free, seek the best angle
         speed = 0.1
         rotation_speed = 0.2 * np.sign(best_angle)
         
-        # Caso de beco sem saída (melhor ângulo é frente, mas frente < threshold)
+        # Dead-end case (best angle is front, but front < threshold)
         if np.abs(best_angle) < 0.05 and max_val_found < free_dist_threshold:
             rotation_speed = 0.2
     
     else:
-        # Caminho livre à frente e longe de paredes
+        # Free path ahead and far from walls
         speed = 0.4
         rotation_speed = 0.0
 
